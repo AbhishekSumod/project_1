@@ -1,10 +1,9 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'dart:convert';
+
 import 'package:japfood/ConvertedApi.dart';
-//import 'package:japfood/UserApi.dart';
 import 'package:japfood/info.dart';
-import 'package:japfood/login.dart';
 import 'package:japfood/login.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -14,33 +13,27 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-//class _HomeScreenState extends State<HomeScreen> {
 class _HomeScreenState extends State<HomeScreen> {
-  List<ConvertedApi> apiList = []; // Initialize as an empty list
-  //List<UserApi> UserApiList = [];
-
-  get index => null;
+  List<ConvertedApi> apiList = [];
+  List<ConvertedApi> uniqueApiList = []; // List to store unique API elements
 
   @override
   void initState() {
     super.initState();
     getApiData();
-    // getUser();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.orange,
+        backgroundColor: Color.fromARGB(255, 13, 182, 187),
         title: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(Icons.restaurant_rounded),
-            SizedBox(
-              width: 20,
-            ),
-            Text('food menu'),
+            SizedBox(width: 20),
+            Text('Food Menu'),
           ],
         ),
         actions: <Widget>[
@@ -48,7 +41,6 @@ class _HomeScreenState extends State<HomeScreen> {
             onPressed: () {
               Navigator.of(context)
                   .push(MaterialPageRoute(builder: (context) => LoginScreen()));
-              //  login(UserApiList: UserApiList[index])));
             },
             child: Text(
               "Login",
@@ -60,124 +52,161 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       body: Column(
-        children: [getListView()],
-      ),
-    );
-  }
-
-  Widget getListView() {
-    return Expanded(
-      child: ListView.builder(
-        itemCount: apiList.length, // Use the length of apiList
-        itemBuilder: (BuildContext context, int index) {
-          return GestureDetector(
-            onTap: () {
-              // Handle item tap here
-              // For example, you can inavigate to a new screen or show a dialog
-              //print("Tapped on ${apiList[index].name}");
-              /*Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => descriptionpage()));*/
-              Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) => Info(
-                          apiList:
-                              apiList[index])) // Use the correct class name
-                  );
-            },
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextField(
+              decoration: InputDecoration(
+                hintText: 'Search',
+                prefixIcon: Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                filled: true,
+                fillColor: Colors.white,
+              ),
+              onChanged: (value) {
+                // Implement search functionality
+              },
+            ),
+          ),
+          SizedBox(
+            height: 10,
+          ), // Increased space between search box and offer box
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: Container(
-                margin: EdgeInsets.symmetric(horizontal: 22, vertical: 10),
-                width: MediaQuery.of(context).size.width,
-                height: 180,
-                decoration: BoxDecoration(
-                  color: Colors.greenAccent,
-                  borderRadius: BorderRadius.circular(15),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.blue.withOpacity(0.6),
-                      offset: Offset(
-                        0.0,
-                        10.0,
-                      ),
-                      blurRadius: 10.0,
-                      spreadRadius: -6.0,
-                    ),
-                  ],
-                  image: DecorationImage(
-                    colorFilter: ColorFilter.mode(
-                      Colors.black.withOpacity(0),
-                      BlendMode.multiply,
-                    ),
-                    image: NetworkImage("${apiList[index].Image}"),
+              padding: EdgeInsets.all(16), // Increased padding for a bigger box
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Colors.tealAccent, Colors.teal], // Gradient colors
+                ),
+                borderRadius: BorderRadius.circular(15),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.5),
+                    spreadRadius: 2,
+                    blurRadius: 5,
+                    offset: Offset(0, 3), // changes position of shadow
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Image.network(
+                    // Displaying the image of the first item of "Biriyani" category
+                    apiList
+                            .firstWhere((element) =>
+                                element.CategoryName?.toLowerCase() ==
+                                "biriyani")
+                            .CategoryImage ??
+                        "",
+                    width: 50,
+                    height: 50,
                     fit: BoxFit.cover,
                   ),
-                ),
-                child: Stack(
-                  children: [
-                    Align(
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 5.0),
-                        /*child: Text(
-                      apiList[index].name ??
-                          "nothing", // Display the name from API data
-                      style: TextStyle(
-                        fontSize: 19,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 2,
-                      textAlign: TextAlign.center,
-                    ),*/
-                      ),
-                      alignment: Alignment.center,
+                  SizedBox(width: 10),
+                  Text(
+                    'Special Offer: \₹110', // Offer price
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20, // Increased font size for a bigger text
                     ),
-                    Align(
-                      alignment: Alignment.bottomLeft,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Container(
-                            padding: EdgeInsets.all(5),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Expanded(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: List.generate(
+                  uniqueApiList.length > 10
+                      ? 10
+                      : uniqueApiList
+                          .length, // Limit the number of items displayed
+                  (index) {
+                    ConvertedApi firstCategoryElement = apiList.firstWhere(
+                      (element) =>
+                          element.CategoryName ==
+                          uniqueApiList[index].CategoryName,
+                      orElse: () =>
+                          ConvertedApi(CategoryName: "", CategoryImage: ""),
+                    );
+
+                    return Column(
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.of(context).push(MaterialPageRoute(
+                              builder: (context) =>
+                                  Info(apiList: uniqueApiList[index]),
+                            ));
+                          },
+                          child: Container(
                             margin: EdgeInsets.all(10),
+                            width: 150,
+                            height: 200,
                             decoration: BoxDecoration(
-                              color: Colors.white10.withOpacity(0.4),
+                              color: Colors.white,
                               borderRadius: BorderRadius.circular(15),
-                            ),
-                            child: Row(
-                              children: [
-                                const Icon(
-                                  Icons.star,
-                                  color: Colors.yellow,
-                                  size: 18,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withOpacity(0.5),
+                                  spreadRadius: 2,
+                                  blurRadius: 5,
+                                  offset: Offset(
+                                      0, 3), // changes position of shadow
                                 ),
-                                SizedBox(width: 7),
-                                Text("${apiList[index].star}"),
+                              ],
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(15),
+                                  child: Container(
+                                    width: 150,
+                                    height: 150,
+                                    child: uniqueApiList[index].CategoryImage !=
+                                                null &&
+                                            uniqueApiList[index]
+                                                .CategoryImage!
+                                                .isNotEmpty
+                                        ? Image.network(
+                                            "${uniqueApiList[index].CategoryImage}",
+                                            width: 150,
+                                            height: 150,
+                                            fit: BoxFit.cover,
+                                          )
+                                        : Placeholder(),
+                                  ),
+                                ),
+                                SizedBox(height: 10),
+                                Text(
+                                  uniqueApiList[index].CategoryName ?? "",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                               ],
                             ),
                           ),
-                          Container(
-                            padding: EdgeInsets.all(5),
-                            margin: EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.7),
-                              borderRadius: BorderRadius.circular(15),
-                            ),
-                            child: Row(
-                              children: [
-                                const Icon(
-                                  Icons.food_bank_outlined,
-                                  color: Colors.yellow,
-                                  size: 20,
-                                ),
-                                SizedBox(width: 7),
-                                Text("${apiList[index].name}"),
-                              ],
-                            ),
-                          )
-                        ],
-                      ),
-                    ),
-                  ],
-                )),
-          );
-        },
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -186,29 +215,23 @@ class _HomeScreenState extends State<HomeScreen> {
     String url = "http://localhost:3000/product";
     var result = await http.get(Uri.parse(url));
     if (result.statusCode == 200) {
-      apiList = (jsonDecode(result.body) as List)
-          .map((item) => ConvertedApi.fromJson(item))
-          .toList(); // Use toList() to convert
-      setState(() {});
+      setState(() {
+        apiList = (jsonDecode(result.body) as List)
+            .map((item) => ConvertedApi.fromJson(item))
+            .toList();
+
+        // Filter out duplicates based on category name
+        uniqueApiList =
+            apiList.fold([], (List<ConvertedApi> previousValue, element) {
+          if (!previousValue
+              .any((e) => e.CategoryName == element.CategoryName)) {
+            previousValue.add(element);
+          }
+          return previousValue;
+        });
+      });
     } else {
-      // Handle API error here
       print("Failed to fetch data: ${result.statusCode}");
     }
   }
-
-  /* Future<void> getUser() async {
-    String url = "http://localhost:3000/user";+
-    var result = await http.get(Uri.parse(url));
-    if (result.statusCode == 200) {
-      UserApiList = (jsonDecode(result.body) as List)
-          .map((item) => UserApi.fromJson(item))
-          .toList(); // Use toList() to convert
-      setState(() {});
-    } else {
-      // Handle API error here
-      print("Failed to fetch data: ${result.statusCode}");
-    }
-  }*/
-
-  //descriptionpage() {}
 }

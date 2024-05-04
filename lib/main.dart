@@ -1,23 +1,25 @@
 import 'package:flutter/material.dart';
-import 'package:japfood/HomeScreen.dart';
+import 'package:provider/provider.dart';
+import 'package:japfood/CartProvider.dart';
+import 'package:japfood/HomeScreen.dart'; // Import your home screen
 
 void main() {
-  runApp(MyAPP());
+  runApp(MyApp());
 }
 
-class MyAPP extends StatelessWidget {
-  const MyAPP({super.key});
-
+class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+            create: (_) => CartProvider()), // Provide the CartProvider instance
+      ],
+      child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        title: 'FOOD MENU',
-        theme: ThemeData(
-          primarySwatch: Colors.orange,
-          primaryColor: Colors.orangeAccent,
-        ),
-        home: HomeScreen());
+        title: 'Your App Title',
+        home: HomeScreen(), // Set your home screen as the initial screen
+      ),
+    );
   }
 }
-//"${apiList[index].name}"

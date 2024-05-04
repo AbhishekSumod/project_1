@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'package:japfood/ConvertedApi.dart';
-import 'package:japfood/buypage.dart';
+import 'package:japfood/ProductDetailsPage.dart'; // Import the product details page
 
 class Info extends StatefulWidget {
   final ConvertedApi apiList;
@@ -15,19 +17,20 @@ class Info extends StatefulWidget {
 }
 
 class _InfoState extends State<Info> {
-  int count = 0;
-  int result = 0;
+  late List<ConvertedApi> itemList = [];
+
+  @override
+  void initState() {
+    super.initState();
+    getItemsByCategory();
+  }
 
   @override
   Widget build(BuildContext context) {
-    int? price = widget.apiList.price ?? 0;
-
-    result = count * price;
-
     return Scaffold(
       appBar: AppBar(
-        title: Text("${widget.apiList.name}"),
-        backgroundColor: Colors.orange,
+        title: Text(widget.apiList.CategoryName ?? ''),
+        backgroundColor: Color.fromARGB(255, 30, 197, 234),
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () {
@@ -36,152 +39,92 @@ class _InfoState extends State<Info> {
         ),
       ),
       body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              Container(
-                height: 200,
-                decoration: BoxDecoration(
-                  image: DecorationImage(
-                    image: NetworkImage("${widget.apiList.Image}"),
-                    fit: BoxFit.cover,
-                  ),
-                  borderRadius: BorderRadius.circular(10),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.3),
-                      spreadRadius: 2,
-                      blurRadius: 5,
-                      offset: Offset(0, 3),
-                    ),
-                  ],
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+            ),
+            SizedBox(height: 20),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                "CatsssssssssssssZZegory: ${widget.apiList.CategoryName}",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-              SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    "${widget.apiList.name}",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 24,
-                    ),
-                  ),
-                  Text(
-                    "₹${widget.apiList.price}",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 24,
-                      color: Colors.green,
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 8),
-              Row(
-                children: [
-                  Icon(Icons.star, color: Colors.yellow, size: 18),
-                  SizedBox(width: 7),
-                  Text(
-                    "${widget.apiList.star} (10,281)",
-                    style: TextStyle(fontSize: 14),
-                  ),
-                ],
-              ),
-              SizedBox(height: 16),
-              Text(
-                "${widget.apiList.descrption}",
-                style: TextStyle(fontSize: 16),
-              ),
-              SizedBox(height: 30),
-              Row(
-                children: [
-                  ElevatedButton(
-                    onPressed: () {
-                      setState(() {
-                        if (count > 0) {
-                          count--;
-                        }
-                      });
-                    },
-                    style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all<Color>(
-                        Colors.orange,
-                      ),
-                    ),
-                    child: Text('-'),
-                  ),
-                  SizedBox(width: 10),
-                  Container(
-                    width: 80,
-                    height: 40,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.black),
-                      borderRadius: BorderRadius.circular(9),
-                    ),
-                    child: Text(
-                      '$count',
-                      style: TextStyle(fontSize: 20),
-                    ),
-                  ),
-                  SizedBox(width: 10),
-                  ElevatedButton(
-                    onPressed: () {
-                      setState(() {
-                        count++;
-                      });
-                    },
-                    style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all<Color>(
-                        Colors.orange,
-                      ),
-                    ),
-                    child: Text('+'),
-                  ),
-                  Spacer(),
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => buypage(
-                            apiList: widget.apiList,
-                            count: count,
-                            result: result,
+            ),
+            SizedBox(height: 20),
+            itemList.isEmpty
+                ? Center(
+                    child: CircularProgressIndicator(),
+                  )
+                : ListView.builder(
+                    shrinkWrap: true,
+                    physics: NeverScrollableScrollPhysics(),
+                    itemCount: itemList.length,
+                    itemBuilder: (context, index) {
+                      return GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  ProductDetailsPage(product: itemList[index]),
+                            ),
+                          );
+                        },
+                        child: Card(
+                          elevation: 4,
+                          margin:
+                              EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                          child: ListTile(
+                            title: Text(
+                              itemList[index].name ?? '',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            leading: ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Image.network(
+                                itemList[index].Image ?? '',
+                                width: 80,
+                                height: 80,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                            subtitle:
+                                Text('Price: ${itemList[index].price ?? 0}'),
+                            trailing: Icon(Icons.arrow_forward),
                           ),
                         ),
                       );
                     },
-                    style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all<Color>(
-                        Colors.green,
-                      ),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(10.0),
-                      child: Text(
-                        'BUY',
-                        style: TextStyle(fontSize: 18),
-                      ),
-                    ),
                   ),
-                ],
-              ),
-              SizedBox(height: 20),
-              Align(
-                alignment: Alignment.centerRight,
-                child: Text(
-                  'Total: ₹$result',
-                  style: TextStyle(fontSize: 18),
-                ),
-              ),
-            ],
-          ),
+          ],
         ),
       ),
     );
+  }
+
+  Future<void> getItemsByCategory() async {
+    String url =
+        "http://localhost:3000/product?CategoryName=${widget.apiList.CategoryName}";
+    var response = await http.get(Uri.parse(url));
+    if (response.statusCode == 200) {
+      List<ConvertedApi> tempItemList = [];
+      (jsonDecode(response.body) as List).forEach((item) {
+        ConvertedApi newItem = ConvertedApi.fromJson(item);
+        if (newItem.CategoryName == widget.apiList.CategoryName) {
+          tempItemList.add(newItem);
+        }
+      });
+      setState(() {
+        itemList = tempItemList;
+      });
+    } else {
+      print("Failed to fetch data: ${response.statusCode}");
+    }
   }
 }
