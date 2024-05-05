@@ -17,7 +17,7 @@ class MyApp extends StatelessWidget {
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        title: 'Your App Title',
+        title: 'QReat',
         home: HomeScreen(), // Set your home screen as the initial screen
       ),
     );
