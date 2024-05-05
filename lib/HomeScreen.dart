@@ -37,6 +37,10 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
         actions: <Widget>[
+          _buildQRCodeWidget(), // Widget to display QR code number
+          SizedBox(
+              width:
+                  10), // Add some spacing between QR code widget and Login button
           TextButton(
             onPressed: () {
               Navigator.of(context)
@@ -72,8 +76,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           SizedBox(
-            height: 10,
-          ), // Increased space between search box and offer box
+              height: 10), // Increased space between search box and offer box
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: Container(
@@ -211,27 +214,59 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Future<void> getApiData() async {
-    String url = "http://localhost:3000/product";
-    var result = await http.get(Uri.parse(url));
-    if (result.statusCode == 200) {
-      setState(() {
-        apiList = (jsonDecode(result.body) as List)
-            .map((item) => ConvertedApi.fromJson(item))
-            .toList();
+  Widget _buildQRCodeWidget() {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        children: [
+          Icon(Icons.qr_code),
+          SizedBox(width: 5),
+          Text(
+            '12345', // Replace '12345' with your unique QR code number
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
-        // Filter out duplicates based on category name
-        uniqueApiList =
-            apiList.fold([], (List<ConvertedApi> previousValue, element) {
-          if (!previousValue
-              .any((e) => e.CategoryName == element.CategoryName)) {
-            previousValue.add(element);
-          }
-          return previousValue;
+  Future<void> getApiData() async {
+    try {
+      String url = "http://server-hbua.onrender.com/product";
+      var result = await http.get(Uri.parse(url));
+      if (result.statusCode == 200) {
+        setState(() {
+          apiList = (jsonDecode(result.body) as List)
+              .map((item) => ConvertedApi.fromJson(item))
+              .toList();
+
+          // Filter out duplicates based on category name
+          uniqueApiList =
+              apiList.fold([], (List<ConvertedApi> previousValue, element) {
+            if (!previousValue
+                .any((e) => e.CategoryName == element.CategoryName)) {
+              previousValue.add(element);
+            }
+            return previousValue;
+          });
         });
-      });
-    } else {
-      print("Failed to fetch data: ${result.statusCode}");
+      } else {
+        print("Failed to fetch data: ${result.statusCode}");
+        // Handle error: Display a message or retry data fetching
+      }
+    } catch (e) {
+      print("Error fetching data: $e");
+      // Handle error: Display a message or retry data fetching
     }
   }
+}
+
+void main() {
+  runApp(MaterialApp(
+    title: 'QR Code Demo',
+    home: HomeScreen(),
+  ));
 }
