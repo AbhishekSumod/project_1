@@ -110,7 +110,7 @@ class _InfoState extends State<Info> {
 
   Future<void> getItemsByCategory() async {
     String url =
-        "http://localhost:3000/product?CategoryName=${widget.apiList.CategoryName}";
+        "http://server-hbua.onrender.com/product?CategoryName=${widget.apiList.CategoryName}";
     var response = await http.get(Uri.parse(url));
     if (response.statusCode == 200) {
       List<ConvertedApi> tempItemList = [];

@@ -11,7 +11,7 @@ class CartPage extends StatefulWidget {
 }
 
 class _CartPageState extends State<CartPage> {
-  final String apiUrl = "http://localhost:3000";
+  final String apiUrl = "http://server-hbua.onrender.com/order";
   late TextEditingController _usernameController;
 
   @override
@@ -138,16 +138,34 @@ class _CartPageState extends State<CartPage> {
   Future<void> placeOrder(
       BuildContext context, List<ConvertedApi> cartItems) async {
     try {
-      final response = await http.post(
-        Uri.parse('$apiUrl/order'),
+      var username = _usernameController.text;
+      var requestBody = jsonEncode(<String, dynamic>{
+        'username': username,
+        'cartItems': cartItems.map((item) => item.toJson()).toList(),
+      });
+
+      var response = await http.post(
+        Uri.parse('$apiUrl'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
         },
-        body: jsonEncode(<String, dynamic>{
-          'username': _usernameController.text,
-          'cartItems': cartItems.map((item) => item.toJson()).toList(),
-        }),
+        body: requestBody,
       );
+
+      if (response.statusCode == 307) {
+        // Handle redirect
+        var redirectUrl = response.headers['location'];
+        if (redirectUrl != null) {
+          // Perform another request to the redirect URL
+          response = await http.post(
+            Uri.parse(redirectUrl),
+            headers: <String, String>{
+              'Content-Type': 'application/json; charset=UTF-8',
+            },
+            body: requestBody,
+          );
+        }
+      }
 
       if (response.statusCode == 201) {
         print('Order placed successfully');
