@@ -235,7 +235,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> getApiData() async {
     try {
-      String url = "http://server-hbua.onrender.com/product";
+      String url = "http://localhost:3000/product";
       var result = await http.get(Uri.parse(url));
       if (result.statusCode == 200) {
         setState(() {
